@@ -78,6 +78,15 @@ namespace YoShiSho
                 desiredVelocity = (Target.transform.position + targetVehicle.Velocity * lookAheadTime - transform.position).normalized * maxSpeed;
             }
 
+            if (is2D)
+            {
+                desiredVelocity.z = 0f;
+            }
+            else if (isPlanar)
+            {
+                desiredVelocity.y = 0f;
+            }
+
             return desiredVelocity - vehicle.Velocity;
         }
     }
