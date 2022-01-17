@@ -21,16 +21,22 @@ namespace YoShiSho
     public class Generator : MonoBehaviour
     {
         public GameObject prefab;
-        public GameObject leader;
+        public RouteData data;
+        public int count;
 
         private void Start()
         {
-    
-        }
-    
-        private void Update()
-        {
-    
+            float value = 0f;
+            float delta = data.totalDistance / count;
+            for (int i = 0; i < count; ++i)
+            {
+                GameObject go = Instantiate(prefab, data.Lerp(value), Quaternion.identity);
+                go.transform.parent = transform;
+                MoveAlongRoute mar = go.GetComponent<MoveAlongRoute>();
+                mar.distance = value;
+                mar.data = data;
+                value += delta;
+            }
         }
     }
 }
