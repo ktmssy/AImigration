@@ -19,25 +19,14 @@ using UnityEngine;
 namespace YoShiSho
 {
     /// <summary>
-    /// 到達
+    /// 追う。要ブラッシュアップ
     /// </summary>
-    public class SteeringForArrive : Steering
+    public class SteeringForChase : Steering
     {
         /// <summary>
         /// 目標
         /// </summary>
         public GameObject Target;
-
-        /*/// <summary>
-        /// 到達距離
-        /// </summary>
-        public float ArrivalDistance = 0.3f;*/
-
-        /// <summary>
-        /// 原則半径
-        /// </summary>
-        [Tooltip("0の場合はMaxSpeedになります")]
-        public float SlowDownDistance = 0f;
 
         /// <summary>
         /// 予期速度
@@ -55,37 +44,41 @@ namespace YoShiSho
             maxSpeed = vehicle.MaxSpeed;
             isPlanar = vehicle.IsPlanar;
             is2D = vehicle.Is2D;
-            if (SlowDownDistance == 0f)
-            {
-                SlowDownDistance = maxSpeed;
-            }
         }
 
         public override Vector3 Force()
         {
-            //目標への距離
             Vector3 toTarget = Target.transform.position - transform.position;
+
+            float relativeAngleCos = 0f;
+            float flag = 0f;
 
             if (is2D)
             {
-                toTarget.z = 0f;
+                relativeAngleCos = Vector2.Dot(transform.up, Target.transform.up);
+                flag = Vector2.Dot(new Vector2(toTarget.x, toTarget.y), transform.up);
             }
-            else if (isPlanar)
+            else
             {
-                toTarget.y = 0f;
+                relativeAngleCos = Vector3.Dot(transform.forward, Target.transform.forward);
+                flag = Vector2.Dot(toTarget, transform.forward);
             }
 
-            desiredVelocity = toTarget.magnitude > SlowDownDistance ? toTarget.normalized * maxSpeed : toTarget - vehicle.Velocity;
+            //目標と同じ向き
+            if (flag > 0f && relativeAngleCos < -0.95f)
+            {
+                desiredVelocity = toTarget.normalized * maxSpeed;
+            }
+            else
+            {
+                Vehicle targetVehicle = Target.GetComponent<Vehicle>();
+                //予測時間
+                float lookAheadTime = toTarget.magnitude / (maxSpeed + targetVehicle.Velocity.magnitude);
+                //予測による速度の計算
+                desiredVelocity = (Target.transform.position + targetVehicle.Velocity * lookAheadTime - transform.position).normalized * maxSpeed;
+            }
 
             return desiredVelocity - vehicle.Velocity;
-        }
-
-        public void OnDrawGizmos()
-        {
-            if (Target)
-            {
-                Gizmos.DrawWireSphere(Target.transform.position, SlowDownDistance);
-            }
         }
     }
 }

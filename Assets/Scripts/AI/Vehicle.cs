@@ -122,5 +122,11 @@ namespace YoShiSho
                 timer = 0f;
             }
         }
+
+        public void OnDrawGizmos()
+        {
+           // Gizmos.DrawLine(transform.position, transform.position + Velocity.normalized * 3f);
+            Gizmos.DrawLine(transform.position, transform.position + acceleration.normalized * 3f);
+        }
     }
 }
